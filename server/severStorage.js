@@ -1,38 +1,33 @@
 /* server message storage file */
+var fs = require('fs');
 
 exports.storage = {};
 exports.storage.results = [];
-// sorting methods here
-exports.storage.results.push({
-  username: 'mracus',
-  text: 'Welcome to chatterbox!',
-  room: 'lobby',
-  objectId: + new Date()
+
+fs.readFile('./log.txt', function(err, data){
+  exports.storage.results = JSON.parse(data);
 });
 
 exports.push = function(item) {
   item.objectId = + new Date();
   exports.storage.results.push(item);
-  //console.log("storage: ", item);
-  //console.log("array: ", exports.storage);
+  fs.writeFile('log.txt', JSON.stringify(exports.storage.results), function (err) {
+    if (err) throw err;
+  });
 };
 
 exports.get = function(order) {
-  //console.log("FREDNESS: " +order);
-  if (order === "/?order=-createdAt"){
+  order = order.split('?')[1];
+  if (order === "order=-createdAt"){
     var ret = {};
     ret.results = [];
     for (var i = exports.storage.results.length - 1; i > -1; i--){
       ret.results.push(exports.storage.results[i]);
     }
-    //console.log('original: ', exports.storage.results);
-    //console.log('flipped: ', ret.results);
     return JSON.stringify(ret);
-    //return JSON.stringify(exports.storage);
   } else {
   // default ordering: oldest on top
     return JSON.stringify(exports.storage);
   }
 };
-
 

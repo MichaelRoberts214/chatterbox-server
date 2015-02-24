@@ -30,23 +30,11 @@ exports.requestHandler = function(request, response) {
   // Adding more logging to your server can be an easy way to get passive
   // debugging help, but you should always be careful about leaving stray
   // console.logs in your code.
-  // if (request.method === "GET") {
-  //   console.log('get attempt');
-  // }
 
-  // if (request.method === "OPTIONS"){
-  //   console.log('options !!!');
-  // }
-
-
-  //console.log("Serving request type " + request.method + " for url " + request.url);
   var route = url.parse(request.url);
-
-
 
   // The outgoing status.
   var statusCode = 200;
-
 
   // pathname gets set in the URL (app.server)
   // path and href passed from AJAX request
@@ -77,27 +65,30 @@ exports.requestHandler = function(request, response) {
   // See the note below about CORS headers.
   var headers = defaultCorsHeaders;
 
-
-  // var pathname = url.parse(request.url).pathname;
-  // console.log('request for ' + pathname.toString() + ' received')
-
   headers['Content-Type'] = "text/plain";
 
   if (request.method === "OPTIONS"){
     response.writeHead(statusCode, headers);
+    response.end();
   } else if (request.method === "POST") {
-    if (route.pathname === '/send/'){
+    if (route.pathname === '/classes/messages' || route.pathname === '/classes/room1'){
       request.on('data', function(chunk){
         storage.push(JSON.parse(chunk));
       });
+      response.writeHead(201, headers);
+      response.end();
+    }
+  } else if (request.method === "GET") {
+    console.log(route.pathname);
+    headers['Content-Type'] = "application/json";
+    if (route.pathname === '/classes/room1' || route.pathname === '/classes/messages') {
       response.writeHead(statusCode, headers);
-  }
-} else if (request.method === "GET") {
 
-  headers['Content-Type'] = "application/json";
-  response.writeHead(statusCode, headers);
-    //console.log("MRACUS: " + request.url);
-    response.write(storage.get(request.url));
+      response.end(storage.get(request.url));
+    } else {
+      response.writeHead(404, headers);
+      response.end();
+    }
   }
 
   // Tell the client we are sending them plain text.
@@ -117,6 +108,6 @@ exports.requestHandler = function(request, response) {
   //
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
-  response.end();
+
 };
 

@@ -32,7 +32,7 @@ $(function() {
       app.fetch(false);
 
       // Poll for new messages
-      setInterval(app.fetch, 3000);
+    //  setInterval(app.fetch, 3000);
     },
     send: function(data) {
       app.startSpinner();
@@ -41,7 +41,7 @@ $(function() {
 
       // POST the message to the server
       $.ajax({
-        url: app.server,
+        url: app.server + 'send/',
         type: 'POST',
         data: JSON.stringify(data),
         contentType: 'application/json',

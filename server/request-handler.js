@@ -12,6 +12,7 @@ this file and include it in basic-server.js so that it actually works.
 
 **************************************************************/
 var storage = require("./severStorage.js");
+var url = require("url");
 
 
 exports.requestHandler = function(request, response) {
@@ -38,10 +39,11 @@ exports.requestHandler = function(request, response) {
   // }
 
 
-  console.log("Serving request type " + request.method + " for url " + request.url);
-  // var pathname = url.parse(request.url);
+  //console.log("Serving request type " + request.method + " for url " + request.url);
+  var route = url.parse(request.url);
 
-  // console.dir(pathname);
+
+
   // The outgoing status.
   var statusCode = 200;
 
@@ -84,15 +86,17 @@ exports.requestHandler = function(request, response) {
   if (request.method === "OPTIONS"){
     response.writeHead(statusCode, headers);
   } else if (request.method === "POST") {
-    request.on('data', function(chunk){
-      storage.push(JSON.parse(chunk));
-    });
-    response.writeHead(statusCode, headers);
-  } else if (request.method === "GET") {
+    if (route.pathname === '/send/'){
+      request.on('data', function(chunk){
+        storage.push(JSON.parse(chunk));
+      });
+      response.writeHead(statusCode, headers);
+  }
+} else if (request.method === "GET") {
 
-    headers['Content-Type'] = "application/json";
-    response.writeHead(statusCode, headers);
-    console.log("MRACUS: " + request.url);
+  headers['Content-Type'] = "application/json";
+  response.writeHead(statusCode, headers);
+    //console.log("MRACUS: " + request.url);
     response.write(storage.get(request.url));
   }
 

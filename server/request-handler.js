@@ -11,8 +11,10 @@ this file and include it in basic-server.js so that it actually works.
 *Hint* Check out the node module documentation at http://nodejs.org/api/modules.html.
 
 **************************************************************/
+var storage = require("./severStorage.js");
 
- exports.requestHandler = function(request, response) {
+
+exports.requestHandler = function(request, response) {
   // Request and Response come from node's http module.
   //
   // They include information about both the incoming request, such as
@@ -27,10 +29,30 @@ this file and include it in basic-server.js so that it actually works.
   // Adding more logging to your server can be an easy way to get passive
   // debugging help, but you should always be careful about leaving stray
   // console.logs in your code.
-  console.log("Serving request type " + request.method + " for url " + request.url);
+  // if (request.method === "GET") {
+  //   console.log('get attempt');
+  // }
 
+  // if (request.method === "OPTIONS"){
+  //   console.log('options !!!');
+  // }
+
+
+  console.log("Serving request type " + request.method + " for url " + request.url);
+  // var pathname = url.parse(request.url);
+
+  // console.dir(pathname);
   // The outgoing status.
   var statusCode = 200;
+
+
+  // pathname gets set in the URL (app.server)
+  // path and href passed from AJAX request
+  //   /?order=-createdAt
+  // serve and query work off of this
+  //   search: ?order=-createdAt
+  //   query: order=-createdAt
+  // make handlers for this
 
 
 
@@ -53,15 +75,36 @@ this file and include it in basic-server.js so that it actually works.
   // See the note below about CORS headers.
   var headers = defaultCorsHeaders;
 
+
+  // var pathname = url.parse(request.url).pathname;
+  // console.log('request for ' + pathname.toString() + ' received')
+
+  headers['Content-Type'] = "text/plain";
+
+  if (request.method === "OPTIONS"){
+    response.writeHead(statusCode, headers);
+  } else if (request.method === "POST") {
+    request.on('data', function(chunk){
+      storage.push(JSON.parse(chunk));
+    });
+    response.writeHead(statusCode, headers);
+  } else if (request.method === "GET") {
+
+    headers['Content-Type'] = "application/json";
+    response.writeHead(statusCode, headers);
+    console.log("MRACUS: " + request.url);
+    response.write(storage.get(request.url));
+  }
+
   // Tell the client we are sending them plain text.
   //
   // You will need to change this if you are sending something
   // other than plain text, like JSON or HTML.
-  headers['Content-Type'] = "text/plain";
+
 
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
-  response.writeHead(statusCode, headers);
+
 
   // Make sure to always call response.end() - Node may not send
   // anything back to the client until you do. The string you pass to
@@ -70,6 +113,6 @@ this file and include it in basic-server.js so that it actually works.
   //
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
-  response.end("Hello, World!");
+  response.end();
 };
 
